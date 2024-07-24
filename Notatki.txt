@@ -1,0 +1,26 @@
+BIBLIOTEKI DO POBRANIA
+- Microsoft.Office.Intertop.Excel (do odczytania .xlsx)
+- Serilog/NLog (logowanie akcji)
+
+JAKIE KOLUMNY ?
+- 'Konto'
+- 'Nazwa'
+- 'Saldo okresu'
+
+1. Import danych z pliku XLSX:
+
+    Użyjemy biblioteki ClosedXML do odczytu danych z pliku XLSX w języku C#.
+    Odczytamy dane z odpowiednich kolumn.
+
+2. Kategoryzacja danych:
+
+    Utworzymy mechanizm przypisujący wartości Saldo okresu do odpowiednich kategorii na podstawie kolumny Konto i zdefiniowanych reguł.
+
+3. Wyszczególnienie:
+
+    Sprawdzimy, czy każde wyszczególnienie (GetCostNames) pasuje do jednej z wcześniej zdefiniowanych kategorii.
+    Jeśli wyszczególnienie nie pasuje, zignorujemy je i zalogujemy ten przypadek.
+
+4. Implementacja mechanizmu importu:
+
+    Mechanizm importu będzie elastyczny, pozwalając na łatwe modyfikacje zasad kategoryzacji i sprawdzania wyszczególnienia.
