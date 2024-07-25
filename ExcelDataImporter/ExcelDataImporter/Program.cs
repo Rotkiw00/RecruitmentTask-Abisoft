@@ -4,6 +4,9 @@ internal class Program
 {
     static void Main(string[] args)
     {
-        ExcelImporter.Instance.ImportData();
+        CostService costService = new CostService();
+        costService.ProcessData();
+
+        Console.ReadKey();
     }
 }
