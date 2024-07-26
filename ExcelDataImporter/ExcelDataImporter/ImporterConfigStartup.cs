@@ -2,6 +2,10 @@
 using Microsoft.Extensions.Configuration;
 
 namespace ExcelDataImporter;
+
+/// <summary>
+/// Pobranie konfiguracji do odczytania pliku Excel.
+/// </summary>
 internal class ImporterConfigStartup
 {
     public ExcelImporterSettings ExcelImporterSettings { get; private set; }

@@ -1,97 +1,113 @@
-﻿using ExcelDataImporter;
-using ExcelDataImporter.EntityModels;
+﻿using ExcelDataImporter.EntityModels;
 using NLog;
 
+namespace ExcelDataImporter;
 public class CostService
 {
-    private static readonly Dictionary<string, int> CostCategories = GetCostNames();
-    private static readonly ILogger logger = LogManager.GetCurrentClassLogger();
-    private static readonly List<RawCostData> data = ExcelImporter.Instance.ImportData();
+    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-    private static Dictionary<string, int> GetCostNames()
+    private readonly List<RawCostData> XlsxData = ExcelImporter.Instance.ImportData();
+
+    private readonly List<(string, int)> CostCategories = GetCostNames();
+    private static List<(string, int)> GetCostNames()
     {
-        return new Dictionary<string, int>
+        return new List<(string, int)>
         {
-            {"40-amortyzacja", 401},
-            {"paliwo", 410},
-            {"energia", 413},
-            {"materiały biurowe", 411},
-            {"materiały do rem.", 412},
-            {"części samoch.", 0},
-            {"zużycie mat. inne", 419},
-            {"telekomunikacja", 424},
-            {"naprawy samoch.", 422},
-            {"remonty budowlane", 0},
-            {"prowizje bankowe", 425},
-            {"usługi obce inne", 429},
-            {"od nieruchomości", 432},
-            {"za wiecz. użytk. gruntów", 430},
-            {"od środków transp.", 0},
-            {"podatki pozostałe", 433},
-            {"osobowe", 441},
-            {"bezosobowe", 443},
-            {"ZFN", 0},
-            {"wypłaty jednorazowe", 0},
-            {"wynagrodzenia inne", 0},
-            {"ZUS", 451},
-            {"ZFSS", 0},
-            {"świadczenia inne", 455},
-            {"ryczałt samochodowy", 464},
-            {"delegacje", 461},
-            {"delegacje inne", 0},
-            {"ubezp. majątku", 481},
-            {"reklama kursów", 0},
-            {"reprezentacja", 0},
-            {"pozostałe", 0}
+            ("40-amortyzacja", 401),
+
+            ("paliwo", 410),
+            ("energia", 413),
+            ("materiały biurowe", 411),
+            ("materiały do rem.", 412),
+            ("części samoch.", 0),
+            ("zużycie mat. inne", 419),
+
+            ("telekomunikacja", 424),
+            ("naprawy samoch.", 422),
+            ("remonty budowlane",0),
+            ("prowizje bankowe", 425),
+            ("usługi obce inne", 429),
+
+            ("od nieruchomości", 432),
+            ("za wiecz. użytk. gruntów", 430),
+            ("od środków transp.",0),
+            ("podatki pozostałe", 433),
+
+            ("osobowe", 441),
+            ("bezosobowe", 443),
+            ("ZFN",0),
+            ("wypłaty jednorazowe",0),
+            ("wynagrodzenia inne", 0),
+
+            ("ZUS", 451),
+            ("ZFSS",0),
+            ("świadczenia inne", 455),
+
+            ("ryczałt samochodowy", 464),
+            ("delegacje", 461),
+            ("delegacje inne",0),
+
+            ("ubezp. majątku", 481),
+            ("reklama kursów",0),
+            ("reprezentacja",0),
+            ("pozostałe",0)
         };
     }
 
     public List<CostDto> ProcessData()
     {
-        logger.Info("Rozpoczęcie przetwarzania danych.");
         var costs = new List<CostDto>();
 
-        foreach (var data in data)
+        foreach (var rawCostData in XlsxData)
         {
-            var wyszczegolnienie = ExtractWyszczegolnienie(data.Konto);
-            if (CostCategories.TryGetValue(wyszczegolnienie, out int category))
+            int categoryToValidate = ExtractCategoryFromRecord(rawCostData);
+
+            var matchingCostCategories = CostCategories
+                .Where(cc => cc.Item2 == categoryToValidate)
+                .ToList();
+
+            if (matchingCostCategories.Count != 0)
             {
-                var cost = CreateCost(data, wyszczegolnienie, category);
-                costs.Add(new CostDto(cost));
+                foreach (var (detail, costCategory) in matchingCostCategories)
+                {
+                    Cost cost = CreateCost(rawCostData, detail, categoryToValidate);
+                    costs.Add(new CostDto(cost));
+                }
             }
             else
             {
-                logger.Warn($"Wyszczególnienie '{wyszczegolnienie}' nie pasuje do żadnej kategorii i zostało zignorowane.");
+                _logger.Warn($"Wyszczególnienie dla kategorii '{categoryToValidate}' nie pasuje do żadnej kategorii i zostało zignorowane.");
             }
         }
 
-        logger.Info("Przetwarzanie danych zakończone pomyślnie.");
+        _logger.Info("Przetwarzanie danych zakończone pomyślnie.");
+
         return costs;
     }
 
-    private string ExtractWyszczegolnienie(string konto)
+    private static int ExtractCategoryFromRecord(RawCostData rawCostData)
     {
-        var parts = konto.Split('-');
-        return parts.Length > 2 ? parts[2].Trim() : string.Empty;
+        string[] parts = rawCostData.Konto.Split('-');
+        return int.Parse(parts.Last());
     }
 
-    private Cost CreateCost(RawCostData data, string wyszczegolnienie, int category)
+    private static Cost CreateCost(RawCostData rawCostData, string detail, int category)
     {
         var cost = new Cost
         {
-            Wyszczegolnienie = wyszczegolnienie
+            Wyszczegolnienie = detail
         };
 
         switch (category)
         {
             case 401:
-                cost.Wynajem_pomieszczen = data.SaldoOkresu;
+                cost.Wynajem_pomieszczen = rawCostData.SaldoOkresu;
                 break;
                 // Add other categories here
                 // ...
         }
 
-        logger.Debug($"Utworzono rekord kosztu dla {wyszczegolnienie} o wartości {data.SaldoOkresu}.");
+        _logger.Info($"Utworzono rekord kosztu dla '{detail}' o wartości {rawCostData.SaldoOkresu}.");
 
         return cost;
     }
