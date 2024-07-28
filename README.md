@@ -1,4 +1,16 @@
-**Opis zadania:**
+<details>
+	<summary>INFORMACJE</summary>
+	Program realizuje zadanie importu danych z akruszy z pliku Excel, tj. `Dane_rekrutacja.xlsx`. Mechanizm importu głównie opiera się na zaciągnięciu danych z trzech kolumn 'Konto', 'Nazwa' oraz 'Saldo okresu'. Są one zapisywane do tymczasowego obiektu `RawCostData`, który reprezentuje surowe dane - bezpośrednio zaciągnięte z Excela. Na potrzeby zadania zdecydowano się pominąć pozostałe kolumny.<br>**Klasa** `ExcelImporter` jest zaimplementowana przy użyciu wzorca Singleton. Nie było konieczności użycia tego wzorca, jednak ta klasa ma tylko jedno zadanie - zaimportowanie danych z Excela i tylko tam, gdzie dane są potrzebne tam instancja tej klasy będzie użyta.<br>**Klasa** `CostService` korzysta z instancji `ExcelImportera`, który pobiera dane z Excela. W tej klasie odbywa się przetwarzanie surowych danych na docelowe obiekty, tj. `CostDto`.<br> 
+	Aby nie przekazywać bezpośrednio ścieżki do Excela stworzona została klasa 'konfiguracyjna' - `ImporterConfigStartup`, która zaczytuje z pliku `appsettings.json` ścieżkę do arkuszy (parametr: `XlsxFilePath`) oraz aktualnie rozpatrywany arkusz (parametr: `WorksheetIndex`), gdzie przekazywana liczba odpowiada indeksowi arkusza, który jest w pliku (zaczynając od 1).<br>
+	Wykorzytana została biblioteka NLog do logowania informacji, błędów, czy ostrzeżeń. Dzięki gotowej implementacji możliwe jest utworzenie instancji logera w danej klasie przy pomocy ```LogManager.GetCurrentClassLogger();```.<br>
+	Kod programu został udokumentowany.<br>
+	1. **plik `appsettings.json` zlokalizowany jest w folderze //bin/Debug/net8.0-windows**<br>,
+	2. **logi zapisywane są również w tej samej lokalizacji co ww. plik konfiguracyjny w folderze *logs* **,
+	3. **użyte biblioteki: Microsoft.Office.Interop.Excel, NLog, Microsoft.Extensions.Configuration**
+</details>
+
+<details>
+	<summary>OPIS ZADANIA</summary>
 
 Zadaniem jest zaimportowanie danych z pliku XLSX, zawierającego informacje o `Saldo okresu`, do odpowiedniej kategorii i wyszczególnienia. Plik XLSX zawiera kolumny, które należy przetworzyć w następujący sposób:
 
@@ -52,56 +64,5 @@ public CostDto(Cost entity)
 
 
 ```c#
-private static List<(string, int)> GetCostNames()
-{
-    return new List<(string, int)>
-    {
-        ("40-amortyzacja", 401), 
-
-        ("paliwo", 410),
-        ("energia", 413),
-        ("materiały biurowe", 411),
-        ("materiały do rem.", 412),
-        ("części samoch.", 0),
-        ("zużycie mat. inne", 419),
-
-        ("telekomunikacja", 424),
-        ("naprawy samoch.", 422),
-        ("remonty budowlane",0),
-        ("prowizje bankowe", 425),
-        ("usługi obce inne", 429),
-
-        ("od nieruchomości", 432),
-        ("za wiecz. użytk. gruntów", 430),
-        ("od środków transp.",0),
-        ("podatki pozostałe", 433),
-
-        ("osobowe", 441),
-        ("bezosobowe", 443),
-        ("ZFN",0),
-        ("wypłaty jednorazowe",0),
-        ("wynagrodzenia inne", 0),
-
-        ("ZUS", 451),
-        ("ZFSS",0),
-        ("świadczenia inne", 455),
-
-        ("ryczałt samochodowy", 464),
-        ("delegacje", 461),
-        ("delegacje inne",0),
-
-        ("ubezp. majątku", 481),
-        ("reklama kursów",0),
-        ("reprezentacja",0),
-        ("pozostałe",0)
-    };
-}
-```
-
-Przykład:
-
-| Konto           | Nazwa                                                         | Saldo okresu |
-| --------------- | ------------------------------------------------------------- | ------------ |
-| 520 - 215 - 401 | Wynajem pomieszczeń - Biłgoraj - amortyzacja środków trwałych | 772,98       |
-
-`new CostDto { Wyszczegolnienie = "40-amortyzacja",  Wynajem_pomieszczen = 772,98 }`
+private static List<(string, int)> GetCostNames() { return new List<(string, int)> { ("40-amortyzacja", 401), ("paliwo", 410), ("energia", 413), ("materiały biurowe", 411), ("materiały do rem.", 412), ("części samoch.", 0), ("zużycie mat. inne", 419), ("telekomunikacja", 424), ("naprawy samoch.", 422), ("remonty budowlane",0), ("prowizje bankowe", 425), ("usługi obce inne", 429), ("od nieruchomości", 432), ("za wiecz. użytk. gruntów", 430), ("od środków transp.",0), ("podatki pozostałe", 433), ("osobowe", 441), ("bezosobowe", 443), ("ZFN",0), ("wypłaty jednorazowe",0), ("wynagrodzenia inne", 0), ("ZUS", 451), ("ZFSS",0), ("świadczenia inne", 455), ("ryczałt samochodowy", 464), ("delegacje", 461), ("delegacje inne",0), ("ubezp. majątku", 481), ("reklama kursów",0), ("reprezentacja",0), ("pozostałe",0) }; } ``` Przykład: | Konto | Nazwa | Saldo okresu | | --------------- | ------------------------------------------------------------- | ------------ | | 520 - 215 - 401 | Wynajem pomieszczeń - Biłgoraj - amortyzacja środków trwałych | 772,98 | `new CostDto { Wyszczegolnienie="40-amortyzacja" , Wynajem_pomieszczen=772,98 }`
+</details>

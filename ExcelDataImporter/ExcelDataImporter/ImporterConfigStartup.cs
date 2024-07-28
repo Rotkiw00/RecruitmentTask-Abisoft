@@ -6,6 +6,9 @@ namespace ExcelDataImporter;
 /// <summary>
 /// Pobranie konfiguracji do odczytania pliku Excel.
 /// </summary>
+/// <remarks>
+/// Pole <see cref="ExcelImporterSettings"/> reprezentuje model pliku konfiguracyjnego.
+/// </remarks>
 internal class ImporterConfigStartup
 {
     public ExcelImporterSettings ExcelImporterSettings { get; private set; }
@@ -21,4 +24,3 @@ internal class ImporterConfigStartup
         ExcelImporterSettings = config.GetSection("ExcelImporterSettings").Get<ExcelImporterSettings>();
     }
 }
-

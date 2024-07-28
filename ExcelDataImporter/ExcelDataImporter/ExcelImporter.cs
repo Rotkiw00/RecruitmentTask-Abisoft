@@ -13,19 +13,33 @@ namespace ExcelDataImporter;
 /// </remarks>
 public sealed class ExcelImporter
 {
+    // Utworzenie loggera NLog do logowania informacji i błędów
     private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
+    // Instancja singletona klasy ExcelImporter.
     private static readonly Lazy<ExcelImporter> _instance = new Lazy<ExcelImporter>(() => new ExcelImporter());
     public static ExcelImporter Instance => _instance.Value;
+
+    // Prywatny konstruktor klasy ExcelImporter
     private ExcelImporter() { }
 
+    // Konfiguracja importera zaczytana z pliku appsettings.json
     private readonly ImporterConfigStartup _config = new();
 
+    // Pola reprezentujące aplikację Excel oraz różne elementy arkusza kalkulacyjnego
     private Excel.Application xlsxApp;
     private Excel.Workbook xlsxWorkbook;
     private Excel.Worksheet xlsxWorksheet;
     private Excel.Range xlsxRange;
 
+    /// <summary>
+    /// Zaczytuje arkusz Excel oraz importuje znajdujące się w nim dane.
+    /// Mechanizm importu jest skupiony tylko na trzech kolumnach: Konto, Nazwa i Saldo okresu.
+    /// </summary>
+    /// <returns>
+    /// Lista surowych danych kosztów składających się z Konta, Nazwy oraz Salda okresu.
+    /// Dane przekazane do <see cref="CostService"/>.
+    /// </returns>
     public List<RawCostData> ImportData()
     {
         string excelFileName = Path.GetFileName(_config.ExcelImporterSettings.XlsxFilePath);
@@ -65,10 +79,10 @@ public sealed class ExcelImporter
     }
 
     /// <summary>
-    /// Inicjalizacja pól klasy reprezentujących arkusz kalkulacyjny Excel.
+    /// Inicjalizuje pola klasy reprezentujące arkusz kalkulacyjny Excel.
     /// </summary>
     /// <remarks>
-    /// Pobranie parametrów konfiguracyjnych z <c>appsettings.json</c> do <see cref="ImporterConfigStartup"/>
+    /// Pobiera parametry konfiguracyjne z <c>appsettings.json</c> do <see cref="ImporterConfigStartup"/>.
     /// </remarks>
     private void InitWorkbook()
     {
@@ -85,6 +99,9 @@ public sealed class ExcelImporter
         }
     }
 
+    /// <summary>
+    /// Zwolnienie niezarządzanych domyślnie przez GC zasobów tj. otwartej aplikacji Excel i arkuszy
+    /// </summary>
     private void CleanupUnmanagedResources()
     {
         _logger.Info("Rozpoczęcie zwalaniania zasobów...");
@@ -92,19 +109,31 @@ public sealed class ExcelImporter
         GC.Collect();
         GC.WaitForPendingFinalizers();
 
-        Marshal.ReleaseComObject(xlsxRange);
-        xlsxRange = null;
+        if (xlsxRange is not null)
+        {
+            Marshal.ReleaseComObject(xlsxRange);
+            xlsxRange = null;
+        }
 
-        Marshal.ReleaseComObject(xlsxWorksheet);
-        xlsxWorksheet = null;
+        if (xlsxWorksheet is not null)
+        {
+            Marshal.ReleaseComObject(xlsxWorksheet);
+            xlsxWorksheet = null;
+        }
 
-        xlsxWorkbook.Close();
-        Marshal.ReleaseComObject(xlsxWorkbook);
-        xlsxWorkbook = null;
+        if (xlsxWorkbook is not null)
+        {
+            xlsxWorkbook.Close();
+            Marshal.ReleaseComObject(xlsxWorkbook);
+            xlsxWorkbook = null;
+        }
 
-        xlsxApp.Quit();
-        Marshal.ReleaseComObject(xlsxApp);
-        xlsxApp = null;
+        if (xlsxApp is not null)
+        {
+            xlsxApp.Quit();
+            Marshal.ReleaseComObject(xlsxApp);
+            xlsxApp = null;
+        }
 
         _logger.Info("Zasoby zwolnione.");
     }

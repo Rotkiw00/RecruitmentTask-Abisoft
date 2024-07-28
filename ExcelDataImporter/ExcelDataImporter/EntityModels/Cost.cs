@@ -1,5 +1,12 @@
 ﻿namespace ExcelDataImporter.EntityModels;
 
+/// <summary>
+/// Reprezentuje szczegółowe dane kosztów.
+/// </summary>
+/// <remarks>
+/// Pola kosztów powinny mieć typ wartościowy, np. <see cref="decimal"/>, lecz wymagałoby to dodatkowej konwersji ze stringa.
+/// Na aktualne potrzeby wystarczy typ <see cref="string"/>
+/// </remarks>
 public class Cost
 {
     public string Wyszczegolnienie { get; set; }
@@ -14,7 +21,10 @@ public class Cost
     public string Stacje_diagnostyczne { get; set; }
 }
 
-
+/// <summary>
+/// DTO dla klasy <see cref="Cost"/>. Inicjalizuje nową instancję klasy <see cref="CostDto"/> na podstawie obiektu <see cref="Cost"/>.
+/// </summary>
+/// <param name="entity">Obiekt <see cref="Cost"/>, z którego dane są kopiowane.</param>
 public class CostDto(Cost entity)
 {
     public string Wyszczegolnienie { get; set; } = entity.Wyszczegolnienie;
@@ -28,4 +38,3 @@ public class CostDto(Cost entity)
     public string Pozostale_uslugi { get; set; } = entity.Pozostale_uslugi;
     public string Stacje_diagnostyczne { get; set; } = entity.Stacje_diagnostyczne;
 }
-
